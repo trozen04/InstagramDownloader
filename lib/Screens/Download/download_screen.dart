@@ -31,34 +31,50 @@ class _DownloadScreenState extends State<DownloadScreen> {
     super.initState();
   }
 
-  Future<void> _simulateDownload() async {
+  Future<void> _simulateDownload(String downloadLink) async {
     setState(() {
       _isDownloading = true;
+      _status = 'Downloading Video...';
     });
 
-    // Simulate download process
-    for (int i = 0; i <= 100; i += 10) {
-      await Future.delayed(const Duration(milliseconds: 500));
+    bool downloadSuccess = await downloadFileToPublicFolder(
+      context,
+      downloadLink,
+      onProgress: (progress) {
+        setState(() {
+          _progress = progress;
+        });
+      },
+    );
+
+    if (downloadSuccess) {
+      // Save to history only if download was successful
+      final String title = 'Video ${DateTime.now().millisecondsSinceEpoch}';
+      final String timestamp = DateTime.now().toString().substring(0, 10);
+      await _sharedPrefs.saveDownload(
+        title: title,
+        timestamp: timestamp,
+        thumbnail: thumbnail,
+        downloadLink: downloadLink,
+        type: type,
+      );
+
       setState(() {
-        _progress = i / 100;
+        _isDownloading = false;
+        _status = 'Download Complete!';
+        _progress = 1.0;
+      });
+
+      // Navigate back to home after 2 seconds
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.pop(context);
+      });
+    } else {
+      setState(() {
+        _isDownloading = false;
+        _status = 'Download Failed!';
       });
     }
-
-    // Save mock download to history
-    final String url = ModalRoute.of(context)!.settings.arguments as String;
-    final String title = 'Video ${DateTime.now().millisecondsSinceEpoch}';
-    final String timestamp = DateTime.now().toString().substring(0, 10);
-    await _sharedPrefs.saveDownload(title, timestamp);
-
-    setState(() {
-      _isDownloading = false;
-      _status = 'Download Complete!';
-    });
-
-    // Navigate back to home after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pop(context);
-    });
   }
 
   @override
@@ -71,10 +87,9 @@ class _DownloadScreenState extends State<DownloadScreen> {
         title: Text('Downloading Your Video', style: FTextStyle.heading(context)),
         backgroundColor: AppColors.my_profile_bg_color,
         leading: GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-          },
-            child: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.heading,)),
+          onTap: () => Navigator.pop(context),
+          child: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.heading),
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(
@@ -83,14 +98,14 @@ class _DownloadScreenState extends State<DownloadScreen> {
         ),
         child: BlocProvider(
           create: (context) =>
-              InstaDownloaderBloc()
-                ..add(InstaDownloaderEventHandler(url: widget.url)),
+          InstaDownloaderBloc()
+            ..add(InstaDownloaderEventHandler(url: widget.url)),
           child: BlocListener<InstaDownloaderBloc, InstaDownloaderState>(
-            listener: (context, state) {
+            listener: (context, state) async {
               if (state is InstaDownloaderLoadingState) {
                 setState(() {
                   _isDownloading = true;
-                  _simulateDownload();
+                  _status = 'Fetching Video...';
                 });
               } else if (state is InstaDownloaderSuccessState) {
                 final resultData = state.responseData;
@@ -98,20 +113,21 @@ class _DownloadScreenState extends State<DownloadScreen> {
                 if (resultData.isNotEmpty && resultData[0] is Map) {
                   final data = resultData[0];
                   setState(() {
-                    _isDownloading = false;
                     thumbnail = data['thumbnail'];
                     downloadLink = data['url'];
                     type = data['type'];
-                    if (downloadLink != "") {
-                      downloadFile(context, downloadLink);
-                    }
-                    developer.log('thumbnail: $thumbnail \n downloadLink: $downloadLink \n type: $type');
                   });
+                  showTopSnackBar(context, 'Starting Download...', true);
+
+                  if (downloadLink != "") {
+                    await _simulateDownload(downloadLink); // Start actual download
+                  }
+                  developer.log('thumbnail: $thumbnail \n downloadLink: $downloadLink \n type: $type');
                 }
-                showTopSnackBar(context, 'Downloading...', true);
               } else if (state is InstaDownloaderErrorState) {
                 setState(() {
                   _isDownloading = false;
+                  _status = 'Error Occurred!';
                 });
                 showTopSnackBar(context, state.errorMessage, false);
               }
@@ -142,7 +158,6 @@ class _DownloadScreenState extends State<DownloadScreen> {
                   )
                       : null,
                 ),
-
                 SizedBox(height: height * 0.03),
                 Text(_status, style: FTextStyle.subheading(context)),
                 SizedBox(height: height * 0.02),

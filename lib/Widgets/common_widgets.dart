@@ -97,7 +97,11 @@ class MediaCard extends StatelessWidget {
   }
 }
 
+OverlayEntry? _currentOverlayEntry;
+
 void showTopSnackBar(BuildContext context, String message, bool isSuccess) {
+  _currentOverlayEntry?.remove(); // Remove existing snackbar if any
+
   final overlay = Overlay.of(context);
   final overlayEntry = OverlayEntry(
     builder: (context) => Positioned(
@@ -130,9 +134,13 @@ void showTopSnackBar(BuildContext context, String message, bool isSuccess) {
     ),
   );
 
+  _currentOverlayEntry = overlayEntry;
   overlay.insert(overlayEntry);
 
   Future.delayed(const Duration(seconds: 3), () {
     overlayEntry.remove();
+    if (_currentOverlayEntry == overlayEntry) {
+      _currentOverlayEntry = null;
+    }
   });
 }
