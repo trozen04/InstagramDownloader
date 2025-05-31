@@ -5,6 +5,7 @@ sealed class InstaDownloaderEvent {}
 
 class InstaDownloaderEventHandler extends InstaDownloaderEvent {
   String url;
-  InstaDownloaderEventHandler({required this.url});
+  String? type;
+  InstaDownloaderEventHandler({required this.url, this.type});
 }
 

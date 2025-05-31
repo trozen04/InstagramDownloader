@@ -11,11 +11,14 @@ import 'package:instagram_downloader_project/Widgets/download_function.dart';
 
 class DownloadScreen extends StatefulWidget {
   final String url;
-  const DownloadScreen({super.key, required this.url});
+  final String type;
+
+  const DownloadScreen({super.key, required this.url, required this.type});
 
   @override
   _DownloadScreenState createState() => _DownloadScreenState();
 }
+
 
 class _DownloadScreenState extends State<DownloadScreen> {
   double _progress = 0.0;
@@ -94,12 +97,12 @@ class _DownloadScreenState extends State<DownloadScreen> {
       body: Padding(
         padding: EdgeInsets.symmetric(
           vertical: height * 0.01,
-          horizontal: width * 0.04,
+          horizontal: width * 0.035,
         ),
         child: BlocProvider(
           create: (context) =>
           InstaDownloaderBloc()
-            ..add(InstaDownloaderEventHandler(url: widget.url)),
+            ..add(InstaDownloaderEventHandler(url: widget.url, type: widget.type)),
           child: BlocListener<InstaDownloaderBloc, InstaDownloaderState>(
             listener: (context, state) async {
               if (state is InstaDownloaderLoadingState) {
@@ -112,10 +115,11 @@ class _DownloadScreenState extends State<DownloadScreen> {
                 developer.log('resultData: $resultData');
                 if (resultData.isNotEmpty && resultData[0] is Map) {
                   final data = resultData[0];
+                  developer.log('data: $data');
                   setState(() {
-                    thumbnail = data['thumbnail'];
-                    downloadLink = data['url'];
-                    type = data['type'];
+                    thumbnail = data?['thumbnail'];
+                    downloadLink = data?['url'];
+                    type = data.containsKey('type') ? data['type'] : 'Video';
                   });
                   showTopSnackBar(context, 'Starting Download...', true);
 
@@ -125,6 +129,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
                   developer.log('thumbnail: $thumbnail \n downloadLink: $downloadLink \n type: $type');
                 }
               } else if (state is InstaDownloaderErrorState) {
+                developer.log('errorMessage: ${state.errorMessage}');
                 setState(() {
                   _isDownloading = false;
                   _status = 'Error Occurred!';

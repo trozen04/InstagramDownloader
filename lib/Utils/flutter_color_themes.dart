@@ -196,4 +196,11 @@ class AppColors extends MaterialColor {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+  static const List<BoxShadow> customShadow = [
+    BoxShadow(
+      color: Colors.black26,
+      blurRadius: 10,
+      offset: Offset(0, 4),
+    ),
+  ];
 }

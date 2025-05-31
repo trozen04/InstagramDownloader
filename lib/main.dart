@@ -10,6 +10,7 @@ import 'screens/splash_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -41,8 +42,10 @@ class MyApp extends StatelessWidget {
               page = const HomeScreen();
               break;
             case '/download':
-              final url = settings.arguments as String;
-              page = DownloadScreen(url: url);
+              final args = settings.arguments as Map<String, String>;
+              final url = args['url']!;
+              final type = args['type']!;
+              page = DownloadScreen(url: url, type: type);
               break;
             case '/history':
               page = const HistoryScreen();

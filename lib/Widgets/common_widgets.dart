@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:intl/intl.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -45,13 +47,7 @@ class CustomButton extends StatelessWidget {
 
           color: AppColors.brandNewBg,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.containerShadow,
-              blurRadius: 8,
-              offset: Offset(0, 4),
-            ),
-          ],
+          boxShadow: AppColors.customShadow
         ),
         padding: EdgeInsets.symmetric(
           vertical: MediaQuery.of(context).size.height * 0.02,
@@ -71,27 +67,95 @@ class CustomButton extends StatelessWidget {
 class MediaCard extends StatelessWidget {
   final String title;
   final String subtitle;
-  const MediaCard({super.key, required this.title, required this.subtitle});
+  final String? thumbnail;
+
+  const MediaCard({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    this.thumbnail,
+  });
+
 
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
+
     return Container(
-      margin: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height * 0.01),
-      padding: EdgeInsets.symmetric(vertical: height * 0.01, horizontal: width * 0.04),
-      decoration: BoxDecoration(
-        color: AppColors.containerBG,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.containerBorder),
+      margin: EdgeInsets.symmetric(
+        vertical: height * 0.005,
+        horizontal: width * 0.0,
       ),
-      child: Column(
+      padding: EdgeInsets.all(height * 0.015),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.textBorder
+        ),
+       boxShadow: AppColors.customShadow,
+      ),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: FTextStyle.subheading(context)),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.005),
-          Text(subtitle, style: FTextStyle.body(context).copyWith(color: AppColors.greyText)),
+          // Thumbnail image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: _buildThumbnail(context, width),
+          ),
+          SizedBox(width: width * 0.03), // Spacing between image and text
+          // Title and subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: FTextStyle.subheading(context),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: height * 0.005),
+                Text(
+                  formatDate(subtitle),
+                  style: FTextStyle.body(context).copyWith(
+                    color: AppColors.greyText,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildThumbnail(BuildContext context, double width) {
+    // Check if thumbnail URL is null, empty, or invalid
+    if (thumbnail == null || thumbnail!.isEmpty || !Uri.parse(thumbnail!).isAbsolute) {
+      return Container(
+        width: width * 0.2,
+        height: width * 0.2,
+        color: AppColors.previewBG,
+        child: const Icon(
+          Icons.videocam,
+          size: 30,
+          color: AppColors.preview,
+        ),
+      );
+    }
+
+    return Container(
+      width: width * 0.2,
+      height: width * 0.2,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: CachedNetworkImageProvider(thumbnail!),
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
@@ -116,13 +180,7 @@ void showTopSnackBar(BuildContext context, String message, bool isSuccess) {
           decoration: BoxDecoration(
             color: isSuccess ? AppColors.brandNew : AppColors.failed,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
+            boxShadow: AppColors.customShadow
           ),
           child: Text(
             message,
@@ -144,3 +202,13 @@ void showTopSnackBar(BuildContext context, String message, bool isSuccess) {
     }
   });
 }
+
+String formatDate(String timestamp) {
+  try {
+    DateTime date = DateTime.parse(timestamp);
+    return DateFormat("ddMMM, yyyy").format(date); // e.g., 30Apr,2025
+  } catch (e) {
+    return timestamp;
+  }
+}
+

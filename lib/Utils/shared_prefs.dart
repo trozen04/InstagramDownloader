@@ -48,4 +48,11 @@ class SharedPrefs {
     }
     return [];
   }
+
+  Future<void> clearHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_historyKey);
+  }
+
+
 }

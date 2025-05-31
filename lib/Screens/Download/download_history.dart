@@ -30,13 +30,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         title: Text('Download History', style: FTextStyle.heading(context)),
         backgroundColor: AppColors.my_profile_bg_color,
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.heading),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete, color: AppColors.heading,),
+            onPressed: () async {
+              await SharedPrefs().clearHistory(); // Implement this in SharedPrefs
+              Navigator.pop(context);
+              showTopSnackBar(context, 'History data has been cleared.', true);
+            },
+          ),
+          SizedBox(width: width * 0.035,)
+        ],
       ),
       body: Padding(
-        padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
+        padding: EdgeInsets.symmetric(horizontal: width * 0.035, vertical: height * 0.01),
         child: downloadHistory.isEmpty
             ? Center(
           child: Text(
@@ -51,6 +68,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             return MediaCard(
               title: item['title']!,
               subtitle: item['timestamp']!,
+              thumbnail: item['thumbnail'],
             );
           },
         ),

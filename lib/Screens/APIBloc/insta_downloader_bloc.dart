@@ -19,8 +19,8 @@ class InstaDownloaderBloc extends Bloc<InstaDownloaderEvent, InstaDownloaderStat
 
         final Map<String, dynamic> body = {
           "video_url": event.url,
-          "type": "instagram",
-          "user_id": "ig_trozen123"
+          "type": event.type,
+          "user_id": "trozen"
         };
 
         developer.log('Sending request to ${ApiConstants.baseUrl}');
