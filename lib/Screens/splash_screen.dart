@@ -49,8 +49,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               Image.asset(ImageAssets.appIconHome, width: MediaQuery.of(context).size.width * 0.5),
               SizedBox(height: MediaQuery.of(context).size.height * 0.01),
               Text(
-                'VidLoader',
-                style: FTextStyle.heading(context).copyWith(color: AppColors.brandNew, fontSize: 30),
+                'VidLoader By Trozen',
+                style: FTextStyle.heading(context).copyWith(color: AppColors.brandNew),
               ),
             ],
           ),
