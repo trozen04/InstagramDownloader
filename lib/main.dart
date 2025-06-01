@@ -5,10 +5,13 @@ import 'Screens/APIBloc/insta_downloader_bloc.dart';
 import 'Screens/Dashboard/home_screen.dart';
 import 'Screens/Download/download_history.dart';
 import 'Screens/Download/download_screen.dart';
+import 'Screens/Static/about_screen.dart';
+import 'Screens/Static/contact_me_screen.dart';
 import 'Utils/flutter_color_themes.dart';
 import 'Widgets/custom_navigator.dart';
 import 'screens/splash_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +30,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+        navigatorObservers: [routeObserver],
         title: 'Instagram Downloader',
         theme: ThemeData(
           textTheme: GoogleFonts.outfitTextTheme(),
@@ -51,6 +55,12 @@ class MyApp extends StatelessWidget {
               break;
             case '/history':
               page = const HistoryScreen();
+              break;
+            case '/contact':
+              page = const ContactMeScreen();
+              break;
+            case '/about':
+              page = const AboutScreen();
               break;
             default:
               page = const SplashScreen();

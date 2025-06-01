@@ -6,8 +6,9 @@ import 'dart:io';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 import 'common_widgets.dart';
+import 'package:instagram_downloader_project/Utils/shared_prefs.dart'; // Import SharedPrefs
 
-Future<bool> downloadFileToPublicFolder(BuildContext context, String url, {Function(double)? onProgress}) async {
+Future<bool> downloadFileToPublicFolder(BuildContext context, String url, {Function(double)? onProgress, String? thumbnail}) async {
   bool isGranted = false;
 
   if (Platform.isAndroid) {
@@ -25,7 +26,8 @@ Future<bool> downloadFileToPublicFolder(BuildContext context, String url, {Funct
 
   if (isGranted) {
     final publicDirPath = '/storage/emulated/0/Download';
-    final filePath = '$publicDirPath/video_${DateTime.now().millisecondsSinceEpoch}.mp4';
+    final fileName = 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
+    final filePath = '$publicDirPath/$fileName';
 
     try {
       await Dio().download(
@@ -35,12 +37,21 @@ Future<bool> downloadFileToPublicFolder(BuildContext context, String url, {Funct
           if (total != -1) {
             final progress = received / total;
             onProgress?.call(progress);
-            developer.log('Download progress: ${(progress * 100).toStringAsFixed(2)}%');
           }
         },
       );
 
       scanMediaFile(filePath); // Notify media scanner
+
+      // Save to history
+      await SharedPrefs().saveDownload(
+        title: fileName, // Use fileName or a custom title
+        timestamp: DateTime.now().toString(),
+        thumbnail: thumbnail!, // Provide thumbnail URL if available
+        downloadLink: url,
+        type: 'video', // Adjust based on file type
+        filePath: filePath, // Save the file path
+      );
 
       showTopSnackBar(context, 'File saved to: $filePath', true);
       developer.log('✅ File saved to: $filePath');

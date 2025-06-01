@@ -40,7 +40,6 @@ class _DownloadScreenState extends State<DownloadScreen> {
       _isDownloading = true;
       _status = 'Downloading Video...';
     });
-
     bool downloadSuccess = await downloadFileToPublicFolder(
       context,
       downloadLink,
@@ -49,30 +48,15 @@ class _DownloadScreenState extends State<DownloadScreen> {
           _progress = progress;
         });
       },
+      thumbnail: thumbnail
     );
-
     if (downloadSuccess) {
-      // Save to history only if download was successful
-      final String title = 'Video ${DateTime.now().millisecondsSinceEpoch}';
-      final String timestamp = DateTime.now().toString().substring(0, 10);
-      await _sharedPrefs.saveDownload(
-        title: title,
-        timestamp: timestamp,
-        thumbnail: thumbnail,
-        downloadLink: downloadLink,
-        type: type,
-      );
-
       setState(() {
         _isDownloading = false;
         _status = 'Download Complete!';
         _progress = 1.0;
       });
 
-      // Navigate back to home after 2 seconds
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pop(context);
-      });
     } else {
       setState(() {
         _isDownloading = false;
@@ -88,11 +72,11 @@ class _DownloadScreenState extends State<DownloadScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Downloading Your Video', style: FTextStyle.heading(context)),
-        backgroundColor: AppColors.my_profile_bg_color,
+        title: Text('Downloading Your Video', style: FTextStyle.heading(context).copyWith(color: Colors.white)),
+        backgroundColor: AppColors.brandNew,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.brandNew),
+          child: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
         ),
       ),
       body: Padding(
@@ -114,20 +98,37 @@ class _DownloadScreenState extends State<DownloadScreen> {
               } else if (state is InstaDownloaderSuccessState) {
                 final resultData = state.responseData;
                 developer.log('resultData: $resultData');
-                if (resultData.isNotEmpty && resultData[0] is Map) {
-                  final data = resultData[0];
-                  developer.log('data: $data');
-                  setState(() {
-                    thumbnail = data?['thumbnail'];
-                    downloadLink = data?['url'];
-                    type = data.containsKey('type') ? data['type'] : 'Video';
-                  });
-                  showTopSnackBar(context, 'Starting Download...', true);
 
-                  if (downloadLink != "") {
+                if (widget.type == 'youtube') {
+                  // Handle YouTube case (single object)
+                  if (resultData is Map<String, dynamic> && resultData.containsKey('url')) {
+                    downloadLink = resultData['url'];
                     await _simulateDownload(downloadLink); // Start actual download
+                    developer.log('YouTube downloadLink: $downloadLink');
+                  } else {
+                    setState(() {
+                      _isDownloading = false;
+                      _status = 'No valid download link found.';
+                    });
+                    showTopSnackBar(context, 'No valid download link found.', false);
                   }
-                  developer.log('thumbnail: $thumbnail \n downloadLink: $downloadLink \n type: $type');
+                } else {
+                  // Handle other platforms (list-based response)
+                  if (resultData.isNotEmpty && resultData[0] is Map) {
+                    final data = resultData[0];
+                    developer.log('data: $data');
+                    setState(() {
+                      thumbnail = data?['thumbnail'];
+                      downloadLink = data?['url'];
+                      type = data.containsKey('type') ? data['type'] : 'Video';
+                    });
+                    showTopSnackBar(context, 'Starting Download...', true);
+
+                    if (downloadLink != "") {
+                      await _simulateDownload(downloadLink); // Start actual download
+                    }
+                    developer.log('thumbnail: $thumbnail \n downloadLink: $downloadLink \n type: $type');
+                  }
                 }
               } else if (state is InstaDownloaderErrorState) {
                 developer.log('errorMessage: ${state.errorMessage}');
@@ -180,6 +181,8 @@ class _DownloadScreenState extends State<DownloadScreen> {
                     text: 'Cancel',
                     onPressed: () => Navigator.pop(context),
                   ),
+                SizedBox(height: height * 0.01),
+                Text('Version: 1.0.3', style: FTextStyle.body(context)),
                 BannerAdWidget(
                   adUnitId: AdUnits.BannerBasic, // Test Banner Ad Unit ID
                   alignment: Alignment.bottomCenter,

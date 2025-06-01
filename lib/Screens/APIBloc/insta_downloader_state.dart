@@ -8,7 +8,7 @@ final class InstaDownloaderInitial extends InstaDownloaderState {}
 class InstaDownloaderLoadingState extends InstaDownloaderState {}
 
 class InstaDownloaderSuccessState extends InstaDownloaderState {
-  final responseData;
+  dynamic responseData;
   InstaDownloaderSuccessState(this.responseData);
 }
 

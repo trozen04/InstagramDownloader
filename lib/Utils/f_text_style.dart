@@ -5,21 +5,21 @@ import 'flutter_color_themes.dart';
 class FTextStyle {
   static TextStyle heading(BuildContext context) => GoogleFonts.outfit(
     fontSize: MediaQuery.of(context).size.width * 0.05, // 24px on 400px width
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.w500,
     color: AppColors.brandNew,
   );
-  static TextStyle JoinCompleteMatchTab(BuildContext context) => GoogleFonts.inter(
+
+  static TextStyle joinCompleteMatchTab(BuildContext context) => GoogleFonts.outfit(
     fontSize: MediaQuery.of(context).size.width * 0.032, // ~13px on 400px width
     fontWeight: FontWeight.w600,
     color: AppColors.login_registerr,
   );
 
-  static TextStyle JoinCompleteMatchTabUnselected(BuildContext context) => GoogleFonts.inter(
+  static TextStyle joinCompleteMatchTabUnselected(BuildContext context) => GoogleFonts.outfit(
     fontSize: MediaQuery.of(context).size.width * 0.032,
     fontWeight: FontWeight.w600,
     color: const Color(0xffFFFFFF).withOpacity(0.7),
   );
-
 
   static TextStyle subheading(BuildContext context) => GoogleFonts.outfit(
     fontSize: MediaQuery.of(context).size.width * 0.045, // 18px
@@ -28,7 +28,7 @@ class FTextStyle {
   );
 
   static TextStyle body(BuildContext context) => GoogleFonts.outfit(
-    fontSize: MediaQuery.of(context).size.width * 0.035, // 16px
+    fontSize: MediaQuery.of(context).size.width * 0.035, // 14px
     fontWeight: FontWeight.normal,
     color: AppColors.mobilenumber,
   );
@@ -38,4 +38,15 @@ class FTextStyle {
     fontWeight: FontWeight.w500,
     color: Colors.white,
   );
+
+  static TextStyle outfitRegular({
+    required BuildContext context,
+    double? fontSize,
+    Color? color,
+  }) =>
+      GoogleFonts.outfit(
+        fontSize: fontSize ?? MediaQuery.of(context).size.width * 0.035,
+        fontWeight: FontWeight.w400,
+        color: color ?? AppColors.mobilenumber,
+      );
 }

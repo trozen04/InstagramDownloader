@@ -4,13 +4,13 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class BannerAdWidget extends StatefulWidget {
   final String adUnitId;
   final AdSize adSize;
-  final Alignment alignment; // To control top or bottom placement
+  final Alignment alignment;
 
   const BannerAdWidget({
     Key? key,
     required this.adUnitId,
-    this.adSize = AdSize.banner, // Default to standard banner size
-    this.alignment = Alignment.bottomCenter, // Default to bottom
+    this.adSize = AdSize.banner,
+    this.alignment = Alignment.bottomCenter,
   }) : super(key: key);
 
   @override
@@ -34,13 +34,19 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (_) {
-          setState(() {
-            _isAdLoaded = true;
-          });
+          if (mounted) {
+            setState(() {
+              _isAdLoaded = true;
+            });
+          }
         },
         onAdFailedToLoad: (ad, error) {
           print('Banner ad failed to load: $error');
           ad.dispose();
+          // Retry after 10 seconds
+          Future.delayed(const Duration(seconds: 10), () {
+            if (mounted) _loadBannerAd();
+          });
         },
       ),
     )..load();
@@ -63,6 +69,6 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         child: AdWidget(ad: _bannerAd!),
       ),
     )
-        : const SizedBox.shrink(); // Placeholder when ad is not loaded
+        : const SizedBox.shrink();
   }
 }

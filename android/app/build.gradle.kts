@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.instagram_downloader_project.instagram_downloader_project"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 34
     ndkVersion = "27.0.12077973"
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -40,4 +40,7 @@ android {
 
 flutter {
     source = "../.."
+}
+dependencies {
+    implementation("com.google.android.gms:play-services-ads:24.3.0")
 }

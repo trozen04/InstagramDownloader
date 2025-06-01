@@ -198,9 +198,9 @@ class AppColors extends MaterialColor {
   );
   static const List<BoxShadow> customShadow = [
     BoxShadow(
-      color: Colors.black26,
-      blurRadius: 10,
-      offset: Offset(0, 4),
+      color: Colors.black12,
+      blurRadius: 1,
+      offset: Offset(0, 2),
     ),
   ];
 }

@@ -1,5 +1,7 @@
 import 'dart:developer' as developer;
+import 'dart:io';
 
+import 'package:instagram_downloader_project/Widgets/download_function.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -14,6 +16,7 @@ class SharedPrefs {
     required String thumbnail,
     required String downloadLink,
     required String type,
+    required String filePath, // Add filePath parameter
   }) async {
     final prefs = await SharedPreferences.getInstance();
     List<Map<String, String>> history = await getHistory();
@@ -25,6 +28,7 @@ class SharedPrefs {
       'thumbnail': thumbnail,
       'downloadLink': downloadLink,
       'type': type,
+      'filePath': filePath, // Store the file path
     };
 
     developer.log('new: $newEntry');
@@ -51,7 +55,26 @@ class SharedPrefs {
 
   Future<void> clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_historyKey);
+    final history = await getHistory();
+
+    // Delete each file from the gallery
+    for (var item in history) {
+      final filePath = item['filePath'];
+      if (filePath != null && filePath.isNotEmpty) {
+        try {
+          final file = File(filePath);
+          if (await file.exists()) {
+            await file.delete(); // Delete the file from storage
+            scanMediaFile(filePath); // Notify media scanner
+          }
+        } catch (e) {
+          developer.log('Error deleting file $filePath: $e'); // Use developer.log for consistency
+        }
+      }
+    }
+
+    // Clear the history from shared preferences
+    await prefs.remove(_historyKey); // Use correct key
   }
 
 

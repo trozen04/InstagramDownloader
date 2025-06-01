@@ -17,11 +17,36 @@ class InstaDownloaderBloc extends Bloc<InstaDownloaderEvent, InstaDownloaderStat
 
         final String avatarKey = "454739b9-415f-493f-bc7c-e64f62bf1f13";
 
+        const validTypes = [
+          'instagram',
+          'youtube',
+          'linkedin',
+          'facebook',
+          'twitter',
+          'twitter_metadata',
+          'insta_story',
+          'insta_highlight',
+          'profile_pic',
+          'pinterest',
+          'snapchat'
+        ];
+        if (!validTypes.contains(event.type)) {
+          emit(InstaDownloaderErrorState('Invalid platform type: ${event.type}'));
+          return;
+        }
+
         final Map<String, dynamic> body = {
-          "video_url": event.url,
-          "type": event.type,
-          "user_id": "trozen"
+          'video_url': event.url,
+          'type': event.type,
         };
+
+        if (['insta_story', 'insta_highlight', 'profile_pic', 'intagram'].contains(event.type)) {
+          body['user_id'] = 'ig_trozen';
+        }
+
+        if (event.type == 'youtube') {
+          body['get_url'] = true;
+        }
 
         developer.log('Sending request to ${ApiConstants.baseUrl}');
         developer.log('body: ${body}');
@@ -39,6 +64,15 @@ class InstaDownloaderBloc extends Bloc<InstaDownloaderEvent, InstaDownloaderStat
         developer.log('response: ${response.body}');
         final responseBody = jsonDecode(response.body);
         if(response.statusCode == 200 || response.statusCode == 201) {
+          print('event: ${event.type}');
+          if (responseBody == null) {
+            emit(InstaDownloaderErrorState('No data returned from the server.'));
+            return;
+          }
+          if (event.type == 'youtube') {
+            emit(InstaDownloaderSuccessState(responseBody));
+            return;
+          }
           final resultData = responseBody['data'];
           emit(InstaDownloaderSuccessState(resultData));
         } else {
