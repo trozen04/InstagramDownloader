@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.instagram_downloader_project.instagram_downloader_project"
-    compileSdk = 34
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
