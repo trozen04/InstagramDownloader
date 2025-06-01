@@ -6,7 +6,7 @@ class FTextStyle {
   static TextStyle heading(BuildContext context) => GoogleFonts.outfit(
     fontSize: MediaQuery.of(context).size.width * 0.05, // 24px on 400px width
     fontWeight: FontWeight.bold,
-    color: AppColors.heading,
+    color: AppColors.brandNew,
   );
   static TextStyle JoinCompleteMatchTab(BuildContext context) => GoogleFonts.inter(
     fontSize: MediaQuery.of(context).size.width * 0.032, // ~13px on 400px width

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
+import 'package:instagram_downloader_project/Utils/image_assets.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -38,22 +39,18 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: AppColors.brandNewBorder,
+      backgroundColor: Colors.white,
       body: Center(
         child: FadeTransition(
           opacity: _animation,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.download_rounded,
-                size: MediaQuery.of(context).size.width * 0.2,
-                color: Colors.white,
-              ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+              Image.asset(ImageAssets.appIconHome, width: MediaQuery.of(context).size.width * 0.5),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.01),
               Text(
-                'IG Downloader',
-                style: FTextStyle.heading(context).copyWith(color: Colors.white),
+                'VidLoader',
+                style: FTextStyle.heading(context).copyWith(color: AppColors.brandNew, fontSize: 30),
               ),
             ],
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'Screens/APIBloc/insta_downloader_bloc.dart';
 import 'Screens/Dashboard/home_screen.dart';
 import 'Screens/Download/download_history.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
   runApp(const MyApp());
 }
 

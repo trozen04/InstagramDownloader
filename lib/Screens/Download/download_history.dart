@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:instagram_downloader_project/Utils/constants.dart';
 import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
 import 'package:instagram_downloader_project/Utils/shared_prefs.dart';
+import 'package:instagram_downloader_project/Widgets/Advertisement/BannerAdWidget.dart';
 import 'package:instagram_downloader_project/Widgets/common_widgets.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -38,11 +40,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
         backgroundColor: AppColors.my_profile_bg_color,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.heading),
+          child: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.brandNew),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete, color: AppColors.heading,),
+            icon: const Icon(Icons.delete, color: AppColors.brandNew,),
             onPressed: () async {
               await SharedPrefs().clearHistory(); // Implement this in SharedPrefs
               Navigator.pop(context);
@@ -54,23 +56,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: width * 0.035, vertical: height * 0.01),
-        child: downloadHistory.isEmpty
-            ? Center(
-          child: Text(
-            'No download history',
-            style: FTextStyle.body(context).copyWith(color: AppColors.greyText),
-          ),
-        )
-            : ListView.builder(
-          itemCount: downloadHistory.length,
-          itemBuilder: (context, index) {
-            final item = downloadHistory[index];
-            return MediaCard(
-              title: item['title']!,
-              subtitle: item['timestamp']!,
-              thumbnail: item['thumbnail'],
-            );
-          },
+        child: Column(
+          children: [
+            downloadHistory.isEmpty
+                ? Center(
+              child: Text(
+                'No download history',
+                style: FTextStyle.body(context).copyWith(color: AppColors.greyText),
+              ),
+            )
+                : ListView.builder(
+              itemCount: downloadHistory.length,
+              itemBuilder: (context, index) {
+                final item = downloadHistory[index];
+                return MediaCard(
+                  title: item['title']!,
+                  subtitle: item['timestamp']!,
+                  thumbnail: item['thumbnail'],
+                );
+              },
+            ),
+            BannerAdWidget(
+              adUnitId: AdUnits.BannerBasic, // Test Banner Ad Unit ID
+              alignment: Alignment.bottomCenter,
+            ),
+          ],
         ),
       ),
     );

@@ -1,15 +1,16 @@
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:instagram_downloader_project/Screens/APIBloc/insta_downloader_bloc.dart';
+import 'package:instagram_downloader_project/Utils/constants.dart';
 import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
 import 'package:instagram_downloader_project/Utils/image_assets.dart';
+import 'package:instagram_downloader_project/Widgets/Advertisement/BannerAdWidget.dart';
 import 'package:instagram_downloader_project/Widgets/common_widgets.dart';
 import 'package:instagram_downloader_project/Utils/shared_prefs.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram_downloader_project/Widgets/text_animation.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart' hide RefreshIndicator;
-
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Future<void> _loadRecentDownloads() async {
     final history = await _sharedPrefs.getHistory();
-    developer.log('history: ${history}');
+    developer.log('history: $history');
     setState(() {
       recentDownloads = history.reversed.take(10).toList();
     });
@@ -45,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   void dispose() {
-    _tabController.removeListener(() {}); // Clean up listener
+    _tabController.removeListener(() {});
     _tabController.dispose();
     controller.dispose();
     super.dispose();
@@ -55,15 +56,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
+    String selectedPlatform = _platforms[_tabController.index];
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('VidDownloader', style: FTextStyle.heading(context)),
+        title: Text('VidLoader', style: FTextStyle.heading(context)),
         backgroundColor: AppColors.my_profile_bg_color,
-        leading: Image.asset(ImageAssets.appIconHome, height: 20, width: 20,),
+        leading: Image.asset(ImageAssets.appIconHome, height: 20, width: 20),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history_toggle_off_rounded),
+            icon: const Icon(Icons.history_toggle_off_rounded, color: AppColors.brandNew),
             onPressed: () => Navigator.pushNamed(context, '/history'),
           ),
           SizedBox(width: width * 0.04),
@@ -78,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               labelPadding: EdgeInsets.zero,
               splashFactory: NoSplash.splashFactory,
               overlayColor: MaterialStateProperty.all(Colors.transparent),
-              indicatorColor: Colors.transparent, // Remove default indicator
+              indicatorColor: Colors.transparent,
               tabs: _platforms.asMap().entries.map((entry) {
                 int index = entry.key;
                 String platform = entry.value;
@@ -88,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     color: isSelected ? AppColors.brandNew : Colors.transparent,
                     borderRadius: BorderRadius.circular(100),
                   ),
-                  margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                   child: Center(
                     child: Text(
                       platform,
@@ -102,59 +105,64 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           ),
         ),
-
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: _platforms.asMap().entries.map((entry) {
-          int index = entry.key;
-          String platform = entry.value;
-          return Padding(
+      body: Column(
+        children: [
+          // Static content (not affected by TabBarView)
+          Padding(
             padding: EdgeInsets.symmetric(vertical: height * 0.01, horizontal: width * 0.035),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AnimatedTextWidget(
-                  text: 'Paste $platform URL',
+                  text: 'Paste $selectedPlatform URL',
                   style: FTextStyle.subheading(context),
-                  key: ValueKey(platform),
+                  key: ValueKey(selectedPlatform),
                 ),
                 SizedBox(height: height * 0.02),
                 CustomTextField(
                   controller: controller,
-                  hintText: 'Enter $platform URL here',
+                  hintText: 'Enter $selectedPlatform URL here',
                 ),
                 SizedBox(height: height * 0.03),
                 Center(
                   child: CustomButton(
                     text: 'Download',
-                    onPressed: platform != 'YouTube' ? () {
+                    onPressed: selectedPlatform != 'YouTube'
+                        ? () {
                       if (controller.text.isNotEmpty) {
-                        developer.log('url: ${controller.text}\ntype: ${platform.toLowerCase()}');
+                        developer.log('url: ${controller.text}\ntype: ${selectedPlatform.toLowerCase()}');
                         Navigator.pushNamed(
                           context,
                           '/download',
                           arguments: {
                             'url': controller.text,
-                            'type': platform.toLowerCase(),
+                            'type': selectedPlatform.toLowerCase(),
                           },
                         );
                         controller.clear();
                       } else {
                         showTopSnackBar(context, 'Please enter a URL.', false);
                       }
-                    } : () {
+                    }
+                        : () {
                       showTopSnackBar(context, 'This feature is not available right now.', false);
                     },
-
                   ),
                 ),
                 SizedBox(height: height * 0.03),
                 Text('Recent Downloads', style: FTextStyle.subheading(context)),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: _loadRecentDownloads,
-                    child: recentDownloads.isEmpty
+              ],
+            ),
+          ),
+          // TabBarView for Recent Downloads only
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: _platforms.map((platform) {
+                return RefreshIndicator(
+                  onRefresh: _loadRecentDownloads,
+                  child: recentDownloads.isEmpty
                       ? Center(
                     child: Text(
                       'No recent downloads',
@@ -172,12 +180,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       );
                     },
                   ),
-                ),
-                )
-              ],
+                );
+              }).toList(),
             ),
-          );
-        }).toList(),
+          ),
+          // Fixed Banner Ad at the bottom of the screen
+          BannerAdWidget(
+            adUnitId: AdUnits.BannerBasic, // Test Banner Ad Unit ID
+            alignment: Alignment.bottomCenter,
+          ),
+        ],
       ),
     );
   }

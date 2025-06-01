@@ -1,9 +1,10 @@
 import 'dart:developer' as developer;
-
 import 'package:flutter/material.dart';
 import 'package:instagram_downloader_project/Screens/APIBloc/insta_downloader_bloc.dart';
+import 'package:instagram_downloader_project/Utils/constants.dart';
 import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
+import 'package:instagram_downloader_project/Widgets/Advertisement/BannerAdWidget.dart';
 import 'package:instagram_downloader_project/Widgets/common_widgets.dart';
 import 'package:instagram_downloader_project/Utils/shared_prefs.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -91,7 +92,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
         backgroundColor: AppColors.my_profile_bg_color,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.heading),
+          child: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.brandNew),
         ),
       ),
       body: Padding(
@@ -179,6 +180,10 @@ class _DownloadScreenState extends State<DownloadScreen> {
                     text: 'Cancel',
                     onPressed: () => Navigator.pop(context),
                   ),
+                BannerAdWidget(
+                  adUnitId: AdUnits.BannerBasic, // Test Banner Ad Unit ID
+                  alignment: Alignment.bottomCenter,
+                ),
               ],
             ),
           ),
