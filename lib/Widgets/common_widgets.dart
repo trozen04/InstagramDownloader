@@ -276,3 +276,33 @@ Future<bool> showDeleteConfirmationDialog(BuildContext context) async {
 }
 
 
+class CustomListTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const CustomListTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(icon, color: AppColors.brandNew, size: 20),
+          title: Text(title, style: FTextStyle.body(context)),
+          onTap: onTap,
+        ),
+        const Divider(
+          height: 1,
+          thickness: 1,
+          color: AppColors.textfieldborder, // Or use a theme color if preferred
+        ),
+      ],
+    );
+  }
+}

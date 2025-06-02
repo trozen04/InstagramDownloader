@@ -1,5 +1,4 @@
 import 'dart:developer' as developer;
-
 import 'package:flutter/material.dart';
 import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
@@ -125,6 +124,13 @@ class _ContactMeScreenState extends State<ContactMeScreen> with SingleTickerProv
                     subtitle: '+91-8887692942',
                     onTap: () => _launchURL(context, 'tel:+918887692942'),
                   ),
+                  _buildContactTile(
+                    icon: Icons.video_library, // or use a YouTube-specific icon if available
+                    title: 'YouTube',
+                    subtitle: '@trozen04',
+                    onTap: () => _launchURL(context, 'https://www.youtube.com/@trozen04'),
+                  ),
+
                 ],
               ),
             ),

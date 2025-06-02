@@ -89,7 +89,7 @@ class _AboutScreenState extends State<AboutScreen> with SingleTickerProviderStat
                   CustomInfoRow(
                     context: context,
                     title: 'Version: ',
-                    value: '1.0.3',
+                    value: '1.0.4',
                   ),
                   SizedBox(height: height * 0.01),
                   CustomInfoRow(

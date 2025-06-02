@@ -3,6 +3,8 @@ import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
 import 'package:instagram_downloader_project/Utils/image_assets.dart';
 
+import 'common_widgets.dart';
+
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
 
@@ -18,14 +20,14 @@ class CustomDrawer extends StatelessWidget {
             child: Image.asset(ImageAssets.appIconHome)
           ),
           CustomListTile(
-            icon: Icons.home,
+            icon: Icons.maps_home_work_rounded,
             title: 'Home',
             onTap: () {
               Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
             },
           ),
           CustomListTile(
-            icon: Icons.info,
+            icon: Icons.info_rounded,
             title: 'About',
             onTap: () {
               Navigator.pushNamed(context, '/about');
@@ -44,24 +46,3 @@ class CustomDrawer extends StatelessWidget {
   }
 }
 
-class CustomListTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-
-  const CustomListTile({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: AppColors.brandNew, size: 25),
-      title: Text(title, style: FTextStyle.body(context)),
-      onTap: onTap,
-    );
-  }
-}

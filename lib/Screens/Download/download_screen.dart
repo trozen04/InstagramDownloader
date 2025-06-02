@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:instagram_downloader_project/Screens/APIBloc/insta_downloader_bloc.dart';
 import 'package:instagram_downloader_project/Utils/constants.dart';
 import 'package:instagram_downloader_project/Utils/f_text_style.dart';
+import 'package:instagram_downloader_project/Utils/file_utils.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
 import 'package:instagram_downloader_project/Widgets/Advertisement/BannerAdWidget.dart';
 import 'package:instagram_downloader_project/Widgets/common_widgets.dart';
 import 'package:instagram_downloader_project/Utils/shared_prefs.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram_downloader_project/Widgets/download_function.dart';
+
 
 class DownloadScreen extends StatefulWidget {
   final String url;
@@ -29,10 +31,17 @@ class _DownloadScreenState extends State<DownloadScreen> {
   String thumbnail = "";
   String downloadLink = "";
   String type = "";
-
+  List<Map<String, String>> recentDownloads = [];
   @override
   void initState() {
     super.initState();
+  }
+
+  Future<void> _loadRecentDownloads() async {
+    final history = await _sharedPrefs.getHistory();
+    setState(() {
+      recentDownloads = history.take(1).toList(); // reverse + take last 10
+    });
   }
 
   Future<void> _simulateDownload(String downloadLink) async {
@@ -56,7 +65,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
         _status = 'Download Complete!';
         _progress = 1.0;
       });
-
+      _loadRecentDownloads();
     } else {
       setState(() {
         _isDownloading = false;
@@ -182,11 +191,48 @@ class _DownloadScreenState extends State<DownloadScreen> {
                     onPressed: () => Navigator.pop(context),
                   ),
                 SizedBox(height: height * 0.01),
-                Text('Version: 1.0.3', style: FTextStyle.body(context)),
-                BannerAdWidget(
-                  adUnitId: AdUnits.BannerBasic, // Test Banner Ad Unit ID
-                  alignment: Alignment.bottomCenter,
+                SizedBox(height: height * 0.01,),
+                ListView.builder(
+                  itemCount: recentDownloads.length,
+                  shrinkWrap: true, // important when inside scroll view
+                  physics: NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final item = recentDownloads[index];
+                    return GestureDetector(
+                      onTap: () {
+                        openFile(
+                          context,
+                          item['filePath'],
+                          showTopSnackBar: showTopSnackBar,
+                          openManageAllFilesPermission: openManageAllFilesPermission,
+                        );
+                      },
+                      child: MediaCard(
+                        title: item['title']!,
+                        subtitle: item['timestamp']!,
+                        thumbnail: item['thumbnail']!,
+                      ),
+                    );
+
+                  },
                 ),
+                SizedBox(height: height * 0.01),
+                if(recentDownloads.isNotEmpty)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Thank you for using VidLoader', style: FTextStyle.body(context)),
+                    Column(
+                      children: [
+                        SizedBox(height: height * 0.02),
+                        Text('~Trozen', style: FTextStyle.body(context)),
+                      ],
+                    ),
+                  ],
+                ),
+                Spacer(),
+                Text('Version: 1.0.4', style: FTextStyle.body(context)),
               ],
             ),
           ),
