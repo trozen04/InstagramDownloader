@@ -15,7 +15,7 @@ class InstaDownloaderBloc extends Bloc<InstaDownloaderEvent, InstaDownloaderStat
       emit(InstaDownloaderLoadingState());
       try {
 
-        final String avatarKey = "454739b9-415f-493f-bc7c-e64f62bf1f13";
+        final String avatarKey = ApiConstants.xAvatarKey;
 
         const validTypes = [
           'instagram',
@@ -48,7 +48,6 @@ class InstaDownloaderBloc extends Bloc<InstaDownloaderEvent, InstaDownloaderStat
           body['get_url'] = true;
         }
 
-        developer.log('Sending request to ${ApiConstants.baseUrl}');
         developer.log('body: ${body}');
 
         final response = await http.post(
@@ -60,8 +59,6 @@ class InstaDownloaderBloc extends Bloc<InstaDownloaderEvent, InstaDownloaderStat
           body: jsonEncode(body),
         );
 
-        developer.log('response code: ${response.statusCode}');
-        developer.log('response: ${response.body}');
         final responseBody = jsonDecode(response.body);
         if(response.statusCode == 200 || response.statusCode == 201) {
           print('event: ${event.type}');
