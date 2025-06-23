@@ -34,7 +34,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     setState(() {
 
       downloadHistory = history.toList(); // Newest first
-      developer.log('download: $downloadHistory');
     });
   }
 

@@ -1,23 +1,21 @@
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
-import 'package:instagram_downloader_project/Utils/constants.dart';
 import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/file_utils.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
-import 'package:instagram_downloader_project/Utils/image_assets.dart';
-import 'package:instagram_downloader_project/Widgets/Advertisement/BannerAdWidget.dart';
 import 'package:instagram_downloader_project/Widgets/common_widgets.dart';
 import 'package:instagram_downloader_project/Utils/shared_prefs.dart';
 import 'package:instagram_downloader_project/Widgets/custom_drawer.dart';
 import 'package:instagram_downloader_project/Widgets/download_function.dart';
-import 'package:instagram_downloader_project/Widgets/text_animation.dart';
-import 'package:instagram_downloader_project/main.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_filex/open_filex.dart';
 
+import '../../main.dart';
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String? sharedText;
+  const HomeScreen({super.key, this.sharedText});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -25,58 +23,90 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin, RouteAware {
   final TextEditingController controller = TextEditingController();
-  List<Map<String, String>> recentDownloads = [];
   final SharedPrefs _sharedPrefs = SharedPrefs();
-  late TabController _tabController;
   final List<String> _platforms = ['Instagram', 'YouTube', 'Facebook', 'LinkedIn', 'Snapchat', 'Pinterest'];
+  int _currentTabIndex = 0;
+  Future<List<Map<String, String>>>? _recentDownloadsFuture;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _platforms.length, vsync: this);
-    _tabController.addListener(() {
-      setState(() {}); // Rebuild on tab change
-    });
-    _loadRecentDownloads();
+    developer.log('HomeScreen: initState called', name: 'HomeScreen');
+    _recentDownloadsFuture = _loadRecentDownloads();
+    if (widget.sharedText != null && widget.sharedText!.isNotEmpty) {
+      developer.log('HomeScreen: Received shared text: ${widget.sharedText}', name: 'HomeScreen');
+      controller.text = widget.sharedText!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          int targetIndex = 0;
+          if (widget.sharedText!.contains('instagram.com')) {
+            targetIndex = 0;
+            developer.log('HomeScreen: Auto-selected Instagram tab', name: 'HomeScreen');
+          } else if (widget.sharedText!.contains('youtube.com')) {
+            targetIndex = 1;
+            developer.log('HomeScreen: Auto-selected YouTube tab', name: 'HomeScreen');
+          } else if (widget.sharedText!.contains('facebook.com')) {
+            targetIndex = 2;
+            developer.log('HomeScreen: Auto-selected Facebook tab', name: 'HomeScreen');
+          } else if (widget.sharedText!.contains('linkedin.com')) {
+            targetIndex = 3;
+            developer.log('HomeScreen: Auto-selected LinkedIn tab', name: 'HomeScreen');
+          } else if (widget.sharedText!.contains('snapchat.com')) {
+            targetIndex = 4;
+            developer.log('HomeScreen: Auto-selected Snapchat tab', name: 'HomeScreen');
+          } else if (widget.sharedText!.contains('pinterest.com')) {
+            targetIndex = 5;
+            developer.log('HomeScreen: Auto-selected Pinterest tab', name: 'HomeScreen');
+          }
+          _currentTabIndex = targetIndex;
+          developer.log('HomeScreen: Tab changed to: ${_platforms[targetIndex]}', name: 'HomeScreen');
+        });
+      });
+    }
   }
-
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     routeObserver.subscribe(this, ModalRoute.of(context)!);
+    developer.log('HomeScreen: didChangeDependencies called', name: 'HomeScreen');
   }
 
   @override
   void didPopNext() {
-    _loadRecentDownloads();
+    developer.log('HomeScreen: didPopNext called', name: 'HomeScreen');
   }
 
-  Future<void> _loadRecentDownloads() async {
-    final history = await _sharedPrefs.getHistory();
-    setState(() {
-      recentDownloads = history.take(10).toList(); // reverse + take last 10
-    });
+  Future<List<Map<String, String>>> _loadRecentDownloads() async {
+    try {
+      final history = await _sharedPrefs.getHistory();
+      developer.log('HomeScreen: Loaded ${history.length} recent downloads', name: 'HomeScreen');
+      return history.take(10).toList();
+    } catch (e) {
+      developer.log('HomeScreen: Error loading recent downloads: $e', name: 'HomeScreen');
+      return [];
+    }
   }
 
   @override
   void dispose() {
-    routeObserver.unsubscribe(this);
-    _tabController.removeListener(() {});
-    _tabController.dispose();
+      routeObserver.unsubscribe(this);
     controller.dispose();
+    developer.log('HomeScreen: dispose called', name: 'HomeScreen');
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    developer.log('HomeScreen: build called, current tab index: $_currentTabIndex', name: 'HomeScreen');
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
-    String selectedPlatform = _platforms[_tabController.index];
+    String selectedPlatform = _platforms[_currentTabIndex];
 
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).unfocus(); // Dismisses the keyboard
+        FocusScope.of(context).unfocus();
+        setState(() {}); // Force rebuild on tap
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -85,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           backgroundColor: AppColors.my_profile_bg_color,
           leading: Builder(
             builder: (context) => IconButton(
-              icon: Icon(Icons.view_list_rounded, color: AppColors.brandNew,),
+              icon: Icon(Icons.view_list_rounded, color: AppColors.brandNew),
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
@@ -101,54 +131,60 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         drawer: const CustomDrawer(),
         body: Container(
           padding: EdgeInsets.symmetric(vertical: height * 0.01, horizontal: width * 0.035),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(18),
-              topRight: Radius.circular(18)
-            )
+              topRight: Radius.circular(18),
+            ),
           ),
           height: double.infinity,
           child: Column(
             children: [
-              // 🔁 Scrollable part only
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TabBar(
-                        controller: _tabController,
-                        isScrollable: true,
-                        labelPadding: EdgeInsets.zero,
-                        splashFactory: NoSplash.splashFactory,
-                        tabAlignment: TabAlignment.center,
-                        overlayColor: MaterialStateProperty.all(Colors.transparent),
-                        indicator: BoxDecoration(), // ✅ removes indicator
-                        tabs: _platforms.asMap().entries.map((entry) {
-                          int index = entry.key;
-                          String platform = entry.value;
-                          bool isSelected = _tabController.index == index;
-                          return Container(
-                            margin: EdgeInsets.symmetric(horizontal: width * 0.02),
-                            padding: EdgeInsets.symmetric(horizontal: width * 0.03, vertical: height * 0.01),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.brandNew : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Text(
-                                platform,
-                                style: isSelected
-                                    ? FTextStyle.body(context).copyWith(color: Colors.white)
-                                    : FTextStyle.body(context).copyWith(color: AppColors.greyText),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: _platforms.asMap().entries.map((entry) {
+                            int index = entry.key;
+                            String platform = entry.value;
+                            bool isSelected = _currentTabIndex == index;
+                            developer.log('HomeScreen: Tab built, index: $index, isSelected: $isSelected', name: 'HomeScreen');
+                            return GestureDetector(
+                              onTap: () {
+                                if (_currentTabIndex != index) {
+                                  setState(() {
+                                    _currentTabIndex = index;
+                                    controller.clear();
+                                    developer.log('HomeScreen: Tab changed to: $platform', name: 'HomeScreen');
+                                  });
+                                }
+                              },
+                              child: Container(
+                                margin: EdgeInsets.symmetric(horizontal: width * 0.02),
+                                padding: EdgeInsets.symmetric(horizontal: width * 0.03, vertical: height * 0.01),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? AppColors.brandNew : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  platform,
+                                  style: isSelected
+                                      ? FTextStyle.body(context).copyWith(color: Colors.white)
+                                      : FTextStyle.body(context).copyWith(color: AppColors.greyText),
+                                ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                        ),
                       ),
                       SizedBox(height: height * 0.02),
-                      AnimatedTextWidget(
-                        text: 'Paste $selectedPlatform URL',
+                      Text(
+                        'Paste $selectedPlatform URL',
                         style: FTextStyle.subheading(context),
                         key: ValueKey(selectedPlatform),
                       ),
@@ -158,33 +194,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         hintText: 'Enter $selectedPlatform URL here',
                       ),
                       SizedBox(height: height * 0.01),
-                      if(selectedPlatform == 'Instagram')
-                        Text('Please ensure user\'s account is public.', style: FTextStyle.body(context).copyWith(color: AppColors.loss),),
+                      if (selectedPlatform == 'Instagram')
+                        Text(
+                          'Please ensure user\'s account is public.',
+                          style: FTextStyle.body(context).copyWith(color: AppColors.loss),
+                        ),
                       SizedBox(height: height * 0.02),
                       Center(
                         child: CustomButton(
                           text: 'Download',
-                          onPressed:
-                                () {
-                              if (controller.text.isNotEmpty) {
-                                developer.log(
-                                    'url: ${controller.text}\ntype: ${selectedPlatform.toLowerCase()}');
-                                Navigator.pushNamed(
-                                  context,
-                                  '/download',
-                                  arguments: {
-                                    'url': controller.text,
-                                    'type': selectedPlatform.toLowerCase(),
-                                  },
-                                );
-                                controller.clear();
-                              } else {
-                                showTopSnackBar(context, 'Please enter a URL.', false);
-                              }
-                          }
+                          onPressed: () {
+                            if (controller.text.isNotEmpty) {
+                              developer.log('HomeScreen: Download url: ${controller.text}, type: ${selectedPlatform.toLowerCase()}', name: 'HomeScreen');
+                              Navigator.pushNamed(
+                                context,
+                                '/download',
+                                arguments: {
+                                  'url': controller.text,
+                                  'type': selectedPlatform.toLowerCase(),
+                                },
+                              );
+                              controller.clear();
+                            } else {
+                              showTopSnackBar(context, 'Please enter a URL.', false);
+                            }
+                          },
                         ),
                       ),
-
                       SizedBox(height: height * 0.03),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -192,56 +228,69 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           Text('Recent Downloads', style: FTextStyle.subheading(context)),
                           GestureDetector(
                             onTap: () => Navigator.pushNamed(context, '/history'),
-                              child: Text('View all', style: FTextStyle.body(context))
+                            child: Text('View all', style: FTextStyle.body(context)),
                           ),
                         ],
                       ),
                       SizedBox(height: height * 0.01),
-                      recentDownloads.isEmpty
-                          ? Center(
-                        child: Text(
-                          'No recent downloads',
-                          style: FTextStyle.body(context).copyWith(color: AppColors.greyText),
-                        ),
-                      )
-                          : ListView.builder(
-                        itemCount: recentDownloads.length,
-                        shrinkWrap: true, // important when inside scroll view
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final item = recentDownloads[index];
-                          return GestureDetector(
-                            onTap: () {
-                              openFile(
-                                context,
-                                item['filePath'],
-                                showTopSnackBar: showTopSnackBar,
-                                openManageAllFilesPermission: openManageAllFilesPermission,
+                      FutureBuilder<List<Map<String, String>>>(
+                        future: _recentDownloadsFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            developer.log('HomeScreen: Loading recent downloads', name: 'HomeScreen');
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          if (snapshot.hasError) {
+                            developer.log('HomeScreen: Error loading recent downloads: ${snapshot.error}', name: 'HomeScreen');
+                            return Center(
+                              child: Text(
+                                'Error loading downloads',
+                                style: FTextStyle.body(context).copyWith(color: AppColors.greyText),
+                              ),
+                            );
+                          }
+                          final recentDownloads = snapshot.data ?? [];
+                          if (recentDownloads.isEmpty) {
+                            return Center(
+                              child: Text(
+                                'No recent downloads',
+                                style: FTextStyle.body(context).copyWith(color: AppColors.greyText),
+                              ),
+                            );
+                          }
+                          return ListView.builder(
+                            itemCount: recentDownloads.length,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              final item = recentDownloads[index];
+                              final thumbnail = item['thumbnail'] ?? 'assets/placeholder.png';
+                              return GestureDetector(
+                                onTap: () {
+                                  openFile(
+                                    context,
+                                    item['filePath'],
+                                    showTopSnackBar: showTopSnackBar,
+                                    openManageAllFilesPermission: openManageAllFilesPermission,
+                                  );
+                                },
+                                child: MediaCard(
+                                  title: item['title']!,
+                                  subtitle: item['timestamp']!,
+                                  thumbnail: thumbnail,
+                                ),
                               );
                             },
-                            child: MediaCard(
-                              title: item['title']!,
-                              subtitle: item['timestamp']!,
-                              thumbnail: item['thumbnail']!,
-                            ),
                           );
-
                         },
                       ),
                     ],
                   ),
                 ),
               ),
-
-              // 📢 Fixed Banner Ad
-              // BannerAdWidget(
-              //   adUnitId: AdUnits.BannerBasic,
-              //   alignment: Alignment.bottomCenter,
-              // ),
             ],
           ),
         ),
-
       ),
     );
   }

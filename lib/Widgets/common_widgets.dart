@@ -3,6 +3,9 @@ import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import 'CUstomSNackbar.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -149,13 +152,22 @@ class MediaCard extends StatelessWidget {
       );
     }
 
-    return Container(
+    return SizedBox(
       width: width * 0.2,
       height: width * 0.2,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: CachedNetworkImageProvider(thumbnail!),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: CachedNetworkImage(
+          imageUrl: thumbnail ?? '',
           fit: BoxFit.cover,
+          placeholder: (context, url) => Container(
+            color: Colors.grey[200],
+            child: const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
+          ),
+          errorWidget: (context, url, error) => Container(
+            color: Colors.grey[300],
+            child: const Icon(Icons.broken_image, color: Colors.grey),
+          ),
         ),
       ),
     );
@@ -304,5 +316,28 @@ class CustomListTile extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+void openURL(BuildContext context, String urlString) async {
+  if (urlString.isEmpty || urlString.trim().isEmpty) {
+    CustomSnackbar.show(context, message: 'URL is empty', isSuccess: false);
+    return;
+  }
+
+  String cleanedUrl = urlString.trim();
+  if (!cleanedUrl.startsWith('http://') && !cleanedUrl.startsWith('https://')) {
+    cleanedUrl = 'https://$cleanedUrl';
+  }
+
+  try {
+    final Uri url = Uri.parse(cleanedUrl);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.platformDefault);
+    } else {
+      CustomSnackbar.show(context, message: 'Could not launch URL', isSuccess: false);
+    }
+  } catch (e) {
+    CustomSnackbar.show(context, message: 'Invalid URL: $e', isSuccess: false);
   }
 }

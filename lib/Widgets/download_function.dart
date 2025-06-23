@@ -54,10 +54,10 @@ Future<bool> downloadFileToPublicFolder(BuildContext context, String url, {Funct
       );
 
       showTopSnackBar(context, 'File saved to: $filePath', true);
-      developer.log('✅ File saved to: $filePath');
+
       return true;
     } catch (e) {
-      developer.log('❌ Download failed: $e');
+
       showTopSnackBar(context, '❌ Download failed: $e', false);
       return false;
     }

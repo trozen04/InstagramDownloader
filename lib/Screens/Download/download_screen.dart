@@ -106,14 +106,13 @@ class _DownloadScreenState extends State<DownloadScreen> {
                 });
               } else if (state is InstaDownloaderSuccessState) {
                 final resultData = state.responseData;
-                developer.log('resultData: $resultData');
 
                 if (widget.type == 'youtube') {
                   // Handle YouTube case (single object)
                   if (resultData is Map<String, dynamic> && resultData.containsKey('url')) {
                     downloadLink = resultData['url'];
                     await _simulateDownload(downloadLink); // Start actual download
-                    developer.log('YouTube downloadLink: $downloadLink');
+
                   } else {
                     setState(() {
                       _isDownloading = false;
@@ -125,7 +124,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
                   // Handle other platforms (list-based response)
                   if (resultData.isNotEmpty && resultData[0] is Map) {
                     final data = resultData[0];
-                    developer.log('data: $data');
+
                     setState(() {
                       thumbnail = data?['thumbnail'];
                       downloadLink = data?['url'];
@@ -136,11 +135,11 @@ class _DownloadScreenState extends State<DownloadScreen> {
                     if (downloadLink != "") {
                       await _simulateDownload(downloadLink); // Start actual download
                     }
-                    developer.log('thumbnail: $thumbnail \n downloadLink: $downloadLink \n type: $type');
+
                   }
                 }
               } else if (state is InstaDownloaderErrorState) {
-                developer.log('errorMessage: ${state.errorMessage}');
+
                 setState(() {
                   _isDownloading = false;
                   _status = 'Error Occurred!';

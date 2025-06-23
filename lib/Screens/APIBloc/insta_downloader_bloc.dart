@@ -48,8 +48,6 @@ class InstaDownloaderBloc extends Bloc<InstaDownloaderEvent, InstaDownloaderStat
           body['get_url'] = true;
         }
 
-        developer.log('body: ${body}');
-
         final response = await http.post(
           Uri.parse(ApiConstants.baseUrl),
           headers: {

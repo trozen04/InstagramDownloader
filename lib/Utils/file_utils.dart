@@ -11,7 +11,7 @@ Future<void> openFile(
       required Future<void> Function() openManageAllFilesPermission,
       required void Function(BuildContext context, String message, bool isSuccess) showTopSnackBar,
     }) async {
-  developer.log('path: $filePath');
+
   if (filePath == null || filePath.isEmpty) {
     showTopSnackBar(context, 'File path not found.', false);
     return;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'Screens/APIBloc/insta_downloader_bloc.dart';
@@ -11,12 +12,37 @@ import 'Utils/flutter_color_themes.dart';
 import 'Widgets/custom_navigator.dart';
 import 'screens/splash_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:developer' as developer;
+
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+String? sharedText;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  MobileAds.instance.initialize();
-  runApp(const MyApp());
+  developer.log('Main: Starting app initialization', name: 'MainApp');
+  FlutterError.onError = (details) {
+    developer.log('FlutterError: ${details.exceptionAsString()}, stack: ${details.stack}', name: 'MainApp');
+  };
+  try {
+    const MethodChannel _channel = MethodChannel('app.channel.shared.data');
+    developer.log('Main: Setting up MethodChannel', name: 'MainApp');
+    _channel.setMethodCallHandler((call) async {
+      developer.log('Main: MethodChannel called: method=${call.method}, args=${call.arguments}', name: 'MainApp');
+      if (call.method == 'getSharedText') {
+        sharedText = call.arguments as String?;
+        developer.log('Main: Received shared text: $sharedText', name: 'MainApp');
+      }
+    });
+    MobileAds.instance.initialize().then((_) {
+      developer.log('Main: MobileAds initialized successfully', name: 'MainApp');
+    }).catchError((e) {
+      developer.log('Main: Error initializing MobileAds: $e', name: 'MainApp');
+    });
+    developer.log('Main: Running app', name: 'MainApp');
+    runApp(const MyApp());
+  } catch (e) {
+    developer.log('Main: Error during app initialization: $e', name: 'MainApp');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -24,6 +50,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    developer.log('MyApp: Building widget tree', name: 'MainApp');
     return MultiBlocProvider(
       providers: [
         BlocProvider<InstaDownloaderBloc>(create: (context) => InstaDownloaderBloc()),
@@ -39,18 +66,19 @@ class MyApp extends StatelessWidget {
         ),
         initialRoute: '/',
         onGenerateRoute: (settings) {
+          developer.log('MyApp: Generating route: ${settings.name}', name: 'MainApp');
           Widget page;
           switch (settings.name) {
             case '/':
               page = const SplashScreen();
               break;
             case '/home':
-              page = const HomeScreen();
+              page = HomeScreen(sharedText: sharedText);
               break;
             case '/download':
-              final args = settings.arguments as Map<String, String>;
-              final url = args['url']!;
-              final type = args['type']!;
+              final args = settings.arguments as Map<String, String>?;
+              final url = args?['url'] ?? '';
+              final type = args?['type'] ?? 'instagram';
               page = DownloadScreen(url: url, type: type);
               break;
             case '/history':

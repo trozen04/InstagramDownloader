@@ -4,6 +4,9 @@ import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../Widgets/CUstomSNackbar.dart';
+import '../../Widgets/common_widgets.dart';
+
 class ContactMeScreen extends StatefulWidget {
   const ContactMeScreen({super.key});
 
@@ -55,15 +58,11 @@ class _ContactMeScreenState extends State<ContactMeScreen> with SingleTickerProv
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not launch $url. No email app found.')),
-        );
+        CustomSnackbar.show(context, message: 'Could not launch $url. No email app found.', isSuccess: false);
       }
     } catch (e) {
-      developer.log('Error launching URL: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to launch $url: $e')),
-      );
+      CustomSnackbar.show(context, message: 'Failed to launch $url', isSuccess: false);
+
     }
   }
 
@@ -114,9 +113,8 @@ class _ContactMeScreenState extends State<ContactMeScreen> with SingleTickerProv
                   _buildContactTile(
                     icon: Icons.language,
                     title: 'Website',
-                    subtitle: 'Not available currently',
-                    //onTap: () => _launchURL('https://www.earnyourtime.com'),
-                      onTap: () {}
+                    subtitle: 'https://movieloadtime.blogspot.com/',
+                    onTap: () => openURL(context,'https://trozenwho.blogspot.com/'),
                   ),
                   _buildContactTile(
                     icon: Icons.phone,

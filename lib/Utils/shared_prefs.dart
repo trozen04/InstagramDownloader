@@ -31,8 +31,6 @@ class SharedPrefs {
       'filePath': filePath, // Store the file path
     };
 
-    developer.log('new: $newEntry');
-
     // Add new entry and maintain only the most recent 20
     history.insert(0, newEntry); // Insert at the beginning
     if (history.length > _maxHistoryLength) {
