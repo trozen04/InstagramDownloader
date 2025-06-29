@@ -66,7 +66,7 @@ class SharedPrefs {
             scanMediaFile(filePath); // Notify media scanner
           }
         } catch (e) {
-          developer.log('Error deleting file $filePath: $e'); // Use developer.log for consistency
+           // Use developer.log for consistency
         }
       }
     }

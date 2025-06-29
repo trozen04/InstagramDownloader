@@ -16,23 +16,23 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    developer.log('SplashScreen initState called', name: 'SplashScreen');
+    
     // Navigate immediately for testing
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        developer.log('SplashScreen: Navigating to HomeScreen', name: 'SplashScreen');
+        
         Future.delayed(Duration(seconds: 1),() {
           Navigator.pushReplacementNamed(context, '/home');
         });
       } else {
-        developer.log('SplashScreen: Not mounted, navigation skipped', name: 'SplashScreen');
+        
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    developer.log('SplashScreen build called', name: 'SplashScreen');
+    
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,

@@ -1,11 +1,9 @@
 import 'dart:developer' as developer;
-
 import 'package:flutter/material.dart';
 import 'package:instagram_downloader_project/Utils/constants.dart';
 import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
 import 'package:instagram_downloader_project/Utils/shared_prefs.dart';
-import 'package:instagram_downloader_project/Widgets/Advertisement/BannerAdWidget.dart';
 import 'package:instagram_downloader_project/Widgets/common_widgets.dart';
 import 'package:instagram_downloader_project/Widgets/download_function.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -22,6 +20,7 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   List<Map<String, String>> downloadHistory = [];
   final SharedPrefs _sharedPrefs = SharedPrefs();
+
 
   @override
   void initState() {
@@ -82,71 +81,75 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Download History', style: FTextStyle.heading(context).copyWith(color: Colors.white)),
-        backgroundColor: AppColors.brandNew,
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.white),
-            onPressed: () async {
-              final confirm = await showDeleteConfirmationDialog(context);
-              if (!confirm) return;
-
-              bool hasPermission = await _requestStoragePermission();
-              if (hasPermission) {
-                await SharedPrefs().clearHistory();
-                setState(() {
-                  downloadHistory = [];
-                });
-                showTopSnackBar(context, 'History and files cleared.', true);
-              }
-            },
-
-          ),
-          SizedBox(width: width * 0.035),
-        ],
-      ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: width * 0.035, vertical: height * 0.01),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            downloadHistory.isEmpty
-                ? Center(
-              child: Text(
-                'No download history',
-                style: FTextStyle.body(context).copyWith(color: AppColors.greyText),
+    return Column(
+      children: [
+        Expanded(
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text('Download History', style: FTextStyle.heading(context).copyWith(color: Colors.white)),
+              backgroundColor: AppColors.brandNew,
+              leading: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
               ),
-            )
-                : Expanded(
-              child: ListView.builder(
-                itemCount: downloadHistory.length,
-                itemBuilder: (context, index) {
-                  final item = downloadHistory[index];
-                  return GestureDetector(
-                    onTap: () => _openFile(item['filePath']), // Open file on tap
-                    child: MediaCard(
-                      title: item['title']!,
-                      subtitle: item['timestamp']!,
-                      thumbnail: item['thumbnail'],
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.white),
+                  onPressed: () async {
+                    final confirm = await showDeleteConfirmationDialog(context);
+                    if (!confirm) return;
+
+                    bool hasPermission = await _requestStoragePermission();
+                    if (hasPermission) {
+                      await SharedPrefs().clearHistory();
+                      setState(() {
+                        downloadHistory = [];
+                      });
+                      showTopSnackBar(context, 'History and files cleared.', true);
+                    }
+                  },
+
+                ),
+                SizedBox(width: width * 0.035),
+              ],
+            ),
+            body: Padding(
+              padding: EdgeInsets.symmetric(horizontal: width * 0.035, vertical: height * 0.01),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  downloadHistory.isEmpty
+                      ? Center(
+                    child: Text(
+                      'No download history',
+                      style: FTextStyle.body(context).copyWith(color: AppColors.greyText),
                     ),
-                  );
-                },
+                  )
+                      : Expanded(
+                    child: ListView.builder(
+                      itemCount: downloadHistory.length,
+                      itemBuilder: (context, index) {
+                        final item = downloadHistory[index];
+                        return GestureDetector(
+                          onTap: () => _openFile(item['filePath']), // Open file on tap
+                          child: MediaCard(
+                            title: item['title']!,
+                            subtitle: item['timestamp']!,
+                            thumbnail: item['thumbnail'],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                
+                ],
               ),
             ),
-            BannerAdWidget(
-              adUnitId: AdUnits.BannerBasic,
-              alignment: Alignment.bottomCenter,
-            ),
-          ],
+          ),
         ),
-      ),
+      
+      ],
     );
   }
 }

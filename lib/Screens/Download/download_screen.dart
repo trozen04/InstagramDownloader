@@ -5,7 +5,7 @@ import 'package:instagram_downloader_project/Utils/constants.dart';
 import 'package:instagram_downloader_project/Utils/f_text_style.dart';
 import 'package:instagram_downloader_project/Utils/file_utils.dart';
 import 'package:instagram_downloader_project/Utils/flutter_color_themes.dart';
-import 'package:instagram_downloader_project/Widgets/Advertisement/BannerAdWidget.dart';
+
 import 'package:instagram_downloader_project/Widgets/common_widgets.dart';
 import 'package:instagram_downloader_project/Utils/shared_prefs.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,9 +32,12 @@ class _DownloadScreenState extends State<DownloadScreen> {
   String downloadLink = "";
   String type = "";
   List<Map<String, String>> recentDownloads = [];
+
+
   @override
   void initState() {
     super.initState();
+   
   }
 
   Future<void> _loadRecentDownloads() async {
@@ -232,6 +235,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
                 ),
                 Spacer(),
                 Text('Version: 1.0.4', style: FTextStyle.body(context)),
+                SizedBox(height: 20),
               ],
             ),
           ),

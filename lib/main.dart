@@ -1,7 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'Screens/APIBloc/insta_downloader_bloc.dart';
 import 'Screens/Dashboard/home_screen.dart';
 import 'Screens/Download/download_history.dart';
@@ -13,36 +13,39 @@ import 'Widgets/custom_navigator.dart';
 import 'screens/splash_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:developer' as developer;
+import 'package:flutter/services.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
+
+const MethodChannel _logChannel = MethodChannel('app.channel.log');
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 String? sharedText;
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  developer.log('Main: Starting app initialization', name: 'MainApp');
-  FlutterError.onError = (details) {
-    developer.log('FlutterError: ${details.exceptionAsString()}, stack: ${details.stack}', name: 'MainApp');
-  };
-  try {
+  runZonedGuarded<Future<void>>(() async {
+    WidgetsFlutterBinding.ensureInitialized(); // 🔁 Moved here
+    await SentryFlutter.init(
+          (options) {
+        options.dsn = 'https://f88cdd9c8bac9383b053b7d860dc75a8@o4509580511084544.ingest.us.sentry.io/4509580514426880';
+        options.sendDefaultPii = true;
+      },
+    );
     const MethodChannel _channel = MethodChannel('app.channel.shared.data');
-    developer.log('Main: Setting up MethodChannel', name: 'MainApp');
     _channel.setMethodCallHandler((call) async {
-      developer.log('Main: MethodChannel called: method=${call.method}, args=${call.arguments}', name: 'MainApp');
       if (call.method == 'getSharedText') {
         sharedText = call.arguments as String?;
-        developer.log('Main: Received shared text: $sharedText', name: 'MainApp');
       }
     });
-    MobileAds.instance.initialize().then((_) {
-      developer.log('Main: MobileAds initialized successfully', name: 'MainApp');
-    }).catchError((e) {
-      developer.log('Main: Error initializing MobileAds: $e', name: 'MainApp');
-    });
-    developer.log('Main: Running app', name: 'MainApp');
+
     runApp(const MyApp());
-  } catch (e) {
-    developer.log('Main: Error during app initialization: $e', name: 'MainApp');
-  }
+  }, (Object error, StackTrace stack) {
+    _logError(error, stack);
+  });
+}
+
+void _logError(Object error, StackTrace? stack) {
+  final msg = '❌ Error: $error\n📍 Stack: $stack';
+  _logChannel.invokeMethod('log', {'message': msg});
 }
 
 class MyApp extends StatelessWidget {
@@ -50,7 +53,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    developer.log('MyApp: Building widget tree', name: 'MainApp');
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<InstaDownloaderBloc>(create: (context) => InstaDownloaderBloc()),
@@ -66,7 +69,7 @@ class MyApp extends StatelessWidget {
         ),
         initialRoute: '/',
         onGenerateRoute: (settings) {
-          developer.log('MyApp: Generating route: ${settings.name}', name: 'MainApp');
+
           Widget page;
           switch (settings.name) {
             case '/':
